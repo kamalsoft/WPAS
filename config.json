@@ -1,0 +1,13 @@
+{
+  "ShowDiskCleanup": false,
+  "AutoStart": true,
+  "ShowEventViewer": false,
+  "DarkMode": false,
+  "BatteryScript": "Windows Power Saver",
+  "ShowRestorePoint": false,
+  "ShowRestartExplorer": true,
+  "ShowCheckUpdates": true,
+  "ShowEnergyReport": true,
+  "ACScript": "SystemACMode.ps1",
+  "InstallPath": "C:\\WAPS\\"
+}
