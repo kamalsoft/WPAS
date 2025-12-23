@@ -392,7 +392,20 @@ $btnRestorePoint.add_Click({
 })
 $btnRestorePoint.Visible = $script:config.ShowRestorePoint
 
-$flpActions.Controls.AddRange(@($btnDiskCleanup, $btnRestartExplorer, $btnCheckUpdates, $btnEventViewer, $btnEnergyReport, $btnRestorePoint))
+# Battery Report Button
+$btnBatteryReport = New-Object System.Windows.Forms.Button
+$btnBatteryReport.Text = "View Battery Report"
+$btnBatteryReport.Size = New-Object System.Drawing.Size(150, 35)
+$btnBatteryReport.add_Click({
+    $script = Join-Path $scriptPath "GenerateBatteryReport.ps1"
+    if (Test-Path $script) {
+        Start-Process "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$script`""
+    } else {
+        [System.Windows.Forms.MessageBox]::Show("Script not found: GenerateBatteryReport.ps1", "WPAS Error", "OK", "Error")
+    }
+})
+
+$flpActions.Controls.AddRange(@($btnDiskCleanup, $btnRestartExplorer, $btnCheckUpdates, $btnEventViewer, $btnEnergyReport, $btnRestorePoint, $btnBatteryReport))
 $grpBattery.Controls.AddRange(@($lblBatDesign, $lblBatFull, $lblBatWear, $lblBatPercent))
 $tabDashboard.Controls.AddRange(@($lblPowerSource, $lblPlan, $lblGPU, $lblCPUTemp, $lblUptime, $lblRAMDashboard, $pbRAMDashboard, $lblNetSpeed, $lblDiskSpeed, $grpBattery, $chkAutoSwitch, $flpActions))
 

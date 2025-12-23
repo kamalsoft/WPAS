@@ -64,10 +64,10 @@ WPAS installs the following automated tasks to maintain system health:
 
 ## Installation
 
-1.  **Download/Prepare**: Ensure all script files are located in `C:\Tools\pcfix`.
+1.  **Download/Prepare**: Ensure all script files are located in your desired install path.
 2.  **Run Setup**:
     - Open PowerShell as Administrator.
-    - Navigate to the directory: `cd C:\Tools\pcfix`
+    - Navigate to the install path directory.
     - Run the setup script: `.\WAPSSetup.ps1`
 3.  **Launch**: A shortcut named "Windows Power Automation Suite" will be created on your Desktop. Double-click it to start.
 
