@@ -59,7 +59,7 @@ if (Test-Path $startupShortcut) {
 
 # Remove Scheduled Tasks
 Write-Host "Removing Scheduled Tasks..." -ForegroundColor Yellow
-$tasks = @("WPAS System Optimization", "WPAS Log Cleanup", "WPAS Battery Health", "WPAS Clear Standby Memory")
+$tasks = @("WPAS System Optimization", "WPAS Log Cleanup", "WPAS Battery Health", "WPAS Clear Standby Memory", "WPAS Update Check")
 foreach ($task in $tasks) {
     if (Get-ScheduledTask -TaskName $task -ErrorAction SilentlyContinue) {
         Unregister-ScheduledTask -TaskName $task -Confirm:$false -ErrorAction SilentlyContinue

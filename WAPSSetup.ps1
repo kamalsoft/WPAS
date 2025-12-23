@@ -18,7 +18,7 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 $sourceDir = $PSScriptRoot
 
 # Define Installation Directory
-$installPath = "C:\WPAS"
+$installPath = Join-Path $env:SystemDrive "WPAS"
 
 # Prompt user for installation path (Optional, using Read-Host for simplicity)
 Write-Host "Enter installation path (Press Enter for default: $installPath): " -NoNewline -ForegroundColor Cyan
@@ -94,6 +94,9 @@ Register-WPASTask -TaskName "WPAS Battery Health" -ScriptFile "BatteryHealth.ps1
 
 # 4. Clear Standby Memory (Daily at 2 PM)
 Register-WPASTask -TaskName "WPAS Clear Standby Memory" -ScriptFile "ClearStandbyMemory.ps1" -Trigger (New-ScheduledTaskTrigger -Daily -At 2:00pm)
+
+# 5. Update Check (Weekly on Monday at 9 AM)
+Register-WPASTask -TaskName "WPAS Update Check" -ScriptFile "CheckForUpdates.ps1" -Trigger (New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday -At 9:00am)
 
 Write-Host "Shortcut created on Desktop." -ForegroundColor Green
 Write-Host "You can now launch the 'Windows Power Automation Suite' from your desktop." -ForegroundColor Cyan

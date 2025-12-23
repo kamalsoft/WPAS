@@ -574,7 +574,7 @@ $btnSave.add_Click({
     $script:config | ConvertTo-Json | Set-Content $configFile
 
     # Handle Startup Shortcut
-    $startupPath = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\PCFix Control Center.lnk"
+    $startupPath = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\Windows Power Automation Suite.lnk"
     if ($chkStartupSet.Checked) {
         $WshShell = New-Object -ComObject WScript.Shell
         $Shortcut = $WshShell.CreateShortcut($startupPath)
@@ -582,7 +582,7 @@ $btnSave.add_Click({
         $Shortcut.Arguments = "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$scriptPath\WAPS ControlCenter.ps1`" -StartMinimized"
         $Shortcut.Arguments = "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$scriptPath\WAPS ControlCenter.ps1`""
         $Shortcut.IconLocation = "$PSHOME\powershell.exe"
-        $Shortcut.Description = "PCFix Control Center"
+        $Shortcut.Description = "Windows Power Automation Suite"
         $Shortcut.WorkingDirectory = $scriptPath
         $Shortcut.Save()
     } else {
@@ -656,7 +656,7 @@ $btnReset.add_Click({
 
     $script:config | ConvertTo-Json | Set-Content $configFile
 
-    $startupPath = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\PCFix Control Center.lnk"
+    $startupPath = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\Windows Power Automation Suite.lnk"
     if (Test-Path $startupPath) { Remove-Item $startupPath }
 
     Set-Theme $script:config.DarkMode

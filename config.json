@@ -8,6 +8,5 @@
   "ShowRestartExplorer": true,
   "ShowCheckUpdates": true,
   "ShowEnergyReport": true,
-  "ACScript": "SystemACMode.ps1",
-  "InstallPath": "C:\\WAPS\\"
+  "ACScript": "SystemACMode.ps1"
 }
