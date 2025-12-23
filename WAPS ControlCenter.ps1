@@ -392,7 +392,20 @@ $btnRestorePoint.add_Click({
 })
 $btnRestorePoint.Visible = $script:config.ShowRestorePoint
 
-$flpActions.Controls.AddRange(@($btnDiskCleanup, $btnRestartExplorer, $btnCheckUpdates, $btnEventViewer, $btnEnergyReport, $btnRestorePoint))
+# Battery Report Button
+$btnBatteryReport = New-Object System.Windows.Forms.Button
+$btnBatteryReport.Text = "View Battery Report"
+$btnBatteryReport.Size = New-Object System.Drawing.Size(150, 35)
+$btnBatteryReport.add_Click({
+    $script = Join-Path $scriptPath "GenerateBatteryReport.ps1"
+    if (Test-Path $script) {
+        Start-Process "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$script`""
+    } else {
+        [System.Windows.Forms.MessageBox]::Show("Script not found: GenerateBatteryReport.ps1", "WPAS Error", "OK", "Error")
+    }
+})
+
+$flpActions.Controls.AddRange(@($btnDiskCleanup, $btnRestartExplorer, $btnCheckUpdates, $btnEventViewer, $btnEnergyReport, $btnRestorePoint, $btnBatteryReport))
 $grpBattery.Controls.AddRange(@($lblBatDesign, $lblBatFull, $lblBatWear, $lblBatPercent))
 $tabDashboard.Controls.AddRange(@($lblPowerSource, $lblPlan, $lblGPU, $lblCPUTemp, $lblUptime, $lblRAMDashboard, $pbRAMDashboard, $lblNetSpeed, $lblDiskSpeed, $grpBattery, $chkAutoSwitch, $flpActions))
 
@@ -617,18 +630,18 @@ $btnReset.add_Click({
     $script:config.ShowRestartExplorer = $true
     $script:config.ShowCheckUpdates = $true
     $script:config.ShowEventViewer = $true
-    $script:config.ShowEnergyReport = $true
-    $script:config.ShowRestorePoint = $true
-    $script:config.ShowLauncher = $true
+    $script:config.ShowEnergyReport = $false
+    $script:config.ShowRestorePoint = $false
+    $script:config.ShowLauncher = $false
     $script:config.ShowLogs = $true
     $script:config.ShowSysInfo = $true
     $script:config.ShowNetwork = $true
-    $script:config.ShowServices = $true
-    $script:config.ShowProcesses = $true
-    $script:config.ShowStartupApps = $true
-    $script:config.ShowTasks = $true
-    $script:config.ShowSystemClean = $true
-    $script:config.ShowHardware = $true
+    $script:config.ShowServices = $false
+    $script:config.ShowProcesses = $false
+    $script:config.ShowStartupApps = $false
+    $script:config.ShowTasks = $false
+    $script:config.ShowSystemClean = $false
+    $script:config.ShowHardware = $false
 
     if ($cmbAC.Items.Contains($script:config.ACScript)) { $cmbAC.SelectedItem = $script:config.ACScript }
     if ($cmbBat.Items.Contains($script:config.BatteryScript)) { $cmbBat.SelectedItem = $script:config.BatteryScript }
