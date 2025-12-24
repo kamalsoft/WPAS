@@ -434,7 +434,7 @@ $btnBatteryReport.add_Click({
     }
 })
 
-# Analyze Disk Usage Button
+ # Analyze Disk Usage Button
 $btnAnalyzeDisk = New-Object System.Windows.Forms.Button
 $btnAnalyzeDisk.Text = "Analyze Disk Usage"
 $btnAnalyzeDisk.Size = New-Object System.Drawing.Size(150, 35)
@@ -486,9 +486,11 @@ $btnUnusedApps.add_Click({
     }
 })
 
-$flpActions.Controls.AddRange(@($btnDiskCleanup, $btnRestartExplorer, $btnCheckUpdates, $btnEventViewer, $btnEnergyReport, $btnRestorePoint, $btnBatteryReport, $btnAnalyzeDisk, $btnBloatwareDash, $btnCheckDrivers, $btnUnusedApps))
-$grpBattery.Controls.AddRange(@($lblBatDesign, $lblBatFull, $lblBatWear, $lblBatPercent, $btnBatHistory))
-$tabDashboard.Controls.AddRange(@($lblPowerSource, $lblPlan, $lblGPU, $lblCPUTemp, $lblCPUClock, $lblUptime, $lblRAMDashboard, $pbRAMDashboard, $lblNetSpeed, $lblDiskSpeed, $grpBattery, $lblActivation, $chkAutoSwitch, $flpActions))
+ 
+$flpActions.Controls.AddRange(@($btnDiskCleanup, $btnRestartExplorer, $btnCheckUpdates, $btnEventViewer, $btnEnergyReport, $btnRestorePoint, $btnBatteryReport))
+$grpBattery.Controls.AddRange(@($lblBatDesign, $lblBatFull, $lblBatWear, $lblBatPercent))
+$tabDashboard.Controls.AddRange(@($lblPowerSource, $lblPlan, $lblGPU, $lblCPUTemp, $lblUptime, $lblRAMDashboard, $pbRAMDashboard, $lblNetSpeed, $lblDiskSpeed, $grpBattery, $chkAutoSwitch, $flpActions))
+ 
 
 # ------------------------------------------------------------
 # Tab 2: Launcher
