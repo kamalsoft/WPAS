@@ -93,6 +93,7 @@ $script:config = @{
     ShowTasks = $true
     ShowSystemClean = $true
     ShowHardware = $true
+    ShowBloatware = $true
 }
 if (Test-Path $configFile) {
     try {
@@ -121,6 +122,7 @@ if (Test-Path $configFile) {
             if ($saved.PSObject.Properties['ShowTasks']) { $script:config.ShowTasks = $saved.ShowTasks }
             if ($saved.PSObject.Properties['ShowSystemClean']) { $script:config.ShowSystemClean = $saved.ShowSystemClean }
             if ($saved.PSObject.Properties['ShowHardware']) { $script:config.ShowHardware = $saved.ShowHardware }
+            if ($saved.PSObject.Properties['ShowBloatware']) { $script:config.ShowBloatware = $saved.ShowBloatware }
         }
         Write-Log "Configuration loaded successfully."
     } catch {
@@ -257,38 +259,44 @@ $lblCPUTemp.Location = New-Object System.Drawing.Point(20, 130)
 $lblCPUTemp.Size = New-Object System.Drawing.Size(500, 25)
 $lblCPUTemp.Text = "CPU Temp: Detecting..."
 
+# CPU Clock Label
+$lblCPUClock = New-Object System.Windows.Forms.Label
+$lblCPUClock.Location = New-Object System.Drawing.Point(20, 160)
+$lblCPUClock.Size = New-Object System.Drawing.Size(500, 25)
+$lblCPUClock.Text = "CPU Speed: Detecting..."
+
 $lblUptime = New-Object System.Windows.Forms.Label
-$lblUptime.Location = New-Object System.Drawing.Point(20, 160)
+$lblUptime.Location = New-Object System.Drawing.Point(20, 190)
 $lblUptime.Size = New-Object System.Drawing.Size(500, 25)
 $lblUptime.Text = "Uptime: Calculating..."
 
 # RAM Usage Dashboard
 $lblRAMDashboard = New-Object System.Windows.Forms.Label
-$lblRAMDashboard.Location = New-Object System.Drawing.Point(20, 190)
+$lblRAMDashboard.Location = New-Object System.Drawing.Point(20, 220)
 $lblRAMDashboard.Size = New-Object System.Drawing.Size(500, 25)
 $lblRAMDashboard.Text = "RAM Usage: Calculating..."
 
 $pbRAMDashboard = New-Object System.Windows.Forms.ProgressBar
-$pbRAMDashboard.Location = New-Object System.Drawing.Point(20, 220)
+$pbRAMDashboard.Location = New-Object System.Drawing.Point(20, 250)
 $pbRAMDashboard.Size = New-Object System.Drawing.Size(520, 20)
 $pbRAMDashboard.Style = "Continuous"
 
 # Network Speed Label
 $lblNetSpeed = New-Object System.Windows.Forms.Label
-$lblNetSpeed.Location = New-Object System.Drawing.Point(20, 250)
+$lblNetSpeed.Location = New-Object System.Drawing.Point(20, 280)
 $lblNetSpeed.Size = New-Object System.Drawing.Size(500, 25)
 $lblNetSpeed.Text = "Network Speed: Calculating..."
 
 # Disk Speed Label
 $lblDiskSpeed = New-Object System.Windows.Forms.Label
-$lblDiskSpeed.Location = New-Object System.Drawing.Point(20, 280)
+$lblDiskSpeed.Location = New-Object System.Drawing.Point(20, 310)
 $lblDiskSpeed.Size = New-Object System.Drawing.Size(500, 25)
 $lblDiskSpeed.Text = "Disk Speed: Calculating..."
 
 # Battery Info Group
 $grpBattery = New-Object System.Windows.Forms.GroupBox
 $grpBattery.Text = "Battery Health"
-$grpBattery.Location = New-Object System.Drawing.Point(20, 315)
+$grpBattery.Location = New-Object System.Drawing.Point(20, 345)
 $grpBattery.Size = New-Object System.Drawing.Size(520, 160)
 
 $lblBatDesign = New-Object System.Windows.Forms.Label
@@ -311,16 +319,37 @@ $lblBatPercent.Location = New-Object System.Drawing.Point(20, 120)
 $lblBatPercent.Size = New-Object System.Drawing.Size(400, 25)
 $lblBatPercent.Text = "Battery Percentage: ..."
 
+# Battery History Button
+$btnBatHistory = New-Object System.Windows.Forms.Button
+$btnBatHistory.Text = "View History"
+$btnBatHistory.Location = New-Object System.Drawing.Point(400, 115)
+$btnBatHistory.Size = New-Object System.Drawing.Size(100, 30)
+$btnBatHistory.add_Click({
+    $script = Join-Path $scriptPath "ViewBatteryHistory.ps1"
+    if (Test-Path $script) {
+        Start-Process "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$script`""
+    } else {
+        [System.Windows.Forms.MessageBox]::Show("Script not found: ViewBatteryHistory.ps1", "WPAS Error", "OK", "Error")
+    }
+})
+
+# Activation Status Label
+$lblActivation = New-Object System.Windows.Forms.Label
+$lblActivation.Location = New-Object System.Drawing.Point(20, 510)
+$lblActivation.Size = New-Object System.Drawing.Size(400, 25)
+$lblActivation.Text = "Activation: Checking..."
+$lblActivation.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
+
 # Auto-Switch Checkbox
 $chkAutoSwitch = New-Object System.Windows.Forms.CheckBox
 $chkAutoSwitch.Text = "Auto-Switch Plan on Power Change"
-$chkAutoSwitch.Location = New-Object System.Drawing.Point(20, 490)
+$chkAutoSwitch.Location = New-Object System.Drawing.Point(20, 540)
 $chkAutoSwitch.Size = New-Object System.Drawing.Size(300, 30)
 $chkAutoSwitch.Checked = $script:config.AutoSwitch
 
 # Actions Panel (Flow Layout for dynamic buttons)
 $flpActions = New-Object System.Windows.Forms.FlowLayoutPanel
-$flpActions.Location = New-Object System.Drawing.Point(20, 530)
+$flpActions.Location = New-Object System.Drawing.Point(20, 580)
 $flpActions.Size = New-Object System.Drawing.Size(540, 200)
 $flpActions.FlowDirection = "LeftToRight"
 $flpActions.WrapContents = $true
@@ -405,9 +434,61 @@ $btnBatteryReport.add_Click({
     }
 })
 
-$flpActions.Controls.AddRange(@($btnDiskCleanup, $btnRestartExplorer, $btnCheckUpdates, $btnEventViewer, $btnEnergyReport, $btnRestorePoint, $btnBatteryReport))
-$grpBattery.Controls.AddRange(@($lblBatDesign, $lblBatFull, $lblBatWear, $lblBatPercent))
-$tabDashboard.Controls.AddRange(@($lblPowerSource, $lblPlan, $lblGPU, $lblCPUTemp, $lblUptime, $lblRAMDashboard, $pbRAMDashboard, $lblNetSpeed, $lblDiskSpeed, $grpBattery, $chkAutoSwitch, $flpActions))
+# Analyze Disk Usage Button
+$btnAnalyzeDisk = New-Object System.Windows.Forms.Button
+$btnAnalyzeDisk.Text = "Analyze Disk Usage"
+$btnAnalyzeDisk.Size = New-Object System.Drawing.Size(150, 35)
+$btnAnalyzeDisk.add_Click({
+    $script = Join-Path $scriptPath "AnalyzeDiskUsage.ps1"
+    if (Test-Path $script) {
+        Start-Process "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$script`""
+    } else {
+        [System.Windows.Forms.MessageBox]::Show("Script not found: AnalyzeDiskUsage.ps1", "WPAS Error", "OK", "Error")
+    }
+})
+
+# Bloatware Manager Button
+$btnBloatwareDash = New-Object System.Windows.Forms.Button
+$btnBloatwareDash.Text = "Bloatware Manager"
+$btnBloatwareDash.Size = New-Object System.Drawing.Size(150, 35)
+$btnBloatwareDash.add_Click({
+    $script = Join-Path $scriptPath "BloatwareManager.ps1"
+    if (Test-Path $script) {
+        Start-Process "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$script`"" -Verb RunAs
+    } else {
+        [System.Windows.Forms.MessageBox]::Show("Script not found: BloatwareManager.ps1", "WPAS Error", "OK", "Error")
+    }
+})
+
+# Check Drivers Button
+$btnCheckDrivers = New-Object System.Windows.Forms.Button
+$btnCheckDrivers.Text = "Check Drivers"
+$btnCheckDrivers.Size = New-Object System.Drawing.Size(150, 35)
+$btnCheckDrivers.add_Click({
+    $script = Join-Path $scriptPath "CheckDrivers.ps1"
+    if (Test-Path $script) {
+        Start-Process "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$script`""
+    } else {
+        [System.Windows.Forms.MessageBox]::Show("Script not found: CheckDrivers.ps1", "WPAS Error", "OK", "Error")
+    }
+})
+
+# Check Unused Apps Button
+$btnUnusedApps = New-Object System.Windows.Forms.Button
+$btnUnusedApps.Text = "Check Old Apps"
+$btnUnusedApps.Size = New-Object System.Drawing.Size(150, 35)
+$btnUnusedApps.add_Click({
+    $script = Join-Path $scriptPath "CheckUnusedApps.ps1"
+    if (Test-Path $script) {
+        Start-Process "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$script`""
+    } else {
+        [System.Windows.Forms.MessageBox]::Show("Script not found: CheckUnusedApps.ps1", "WPAS Error", "OK", "Error")
+    }
+})
+
+$flpActions.Controls.AddRange(@($btnDiskCleanup, $btnRestartExplorer, $btnCheckUpdates, $btnEventViewer, $btnEnergyReport, $btnRestorePoint, $btnBatteryReport, $btnAnalyzeDisk, $btnBloatwareDash, $btnCheckDrivers, $btnUnusedApps))
+$grpBattery.Controls.AddRange(@($lblBatDesign, $lblBatFull, $lblBatWear, $lblBatPercent, $btnBatHistory))
+$tabDashboard.Controls.AddRange(@($lblPowerSource, $lblPlan, $lblGPU, $lblCPUTemp, $lblCPUClock, $lblUptime, $lblRAMDashboard, $pbRAMDashboard, $lblNetSpeed, $lblDiskSpeed, $grpBattery, $lblActivation, $chkAutoSwitch, $flpActions))
 
 # ------------------------------------------------------------
 # Tab 2: Launcher
@@ -439,6 +520,7 @@ Add-ScriptButton "Enable System AC Mode" 130 "SystemACMode.ps1"
 Add-ScriptButton "Run System Optimization" 180 "SystemPowerOptimize.ps1"
 Add-ScriptButton "Check Battery Health (Console)" 230 "BatteryHealth.ps1"
 Add-ScriptButton "Open Console Dashboard" 280 "Dashboard.ps1"
+Add-ScriptButton "Backup Power Plan" 330 "BackupPowerPlan.ps1"
 
 # ------------------------------------------------------------
 # Tab 3: Settings
@@ -498,7 +580,7 @@ $chkDarkMode.Checked = $script:config.DarkMode
 $grpDashVis = New-Object System.Windows.Forms.GroupBox
 $grpDashVis.Text = "Dashboard Buttons"
 $grpDashVis.Location = New-Object System.Drawing.Point(20, 260)
-$grpDashVis.Size = New-Object System.Drawing.Size(540, 150)
+$grpDashVis.Size = New-Object System.Drawing.Size(540, 120)
 
 $chkShowDisk = New-Object System.Windows.Forms.CheckBox
 $chkShowDisk.Text = "Disk Cleanup"
@@ -536,7 +618,7 @@ $grpDashVis.Controls.AddRange(@($chkShowDisk, $chkShowExplorer, $chkShowUpdates,
 $grpTabVis = New-Object System.Windows.Forms.GroupBox
 $grpTabVis.Text = "Tab Visibility"
 $grpTabVis.Location = New-Object System.Drawing.Point(20, 420)
-$grpTabVis.Size = New-Object System.Drawing.Size(540, 160)
+$grpTabVis.Size = New-Object System.Drawing.Size(540, 180)
 
 $chkShowLauncher = New-Object System.Windows.Forms.CheckBox; $chkShowLauncher.Text = "Launcher"; $chkShowLauncher.Location = New-Object System.Drawing.Point(20, 30); $chkShowLauncher.Checked = $script:config.ShowLauncher
 $chkShowLogs = New-Object System.Windows.Forms.CheckBox; $chkShowLogs.Text = "Logs"; $chkShowLogs.Location = New-Object System.Drawing.Point(200, 30); $chkShowLogs.Checked = $script:config.ShowLogs
@@ -552,13 +634,51 @@ $chkShowClean = New-Object System.Windows.Forms.CheckBox; $chkShowClean.Text = "
 
 $chkShowHardware = New-Object System.Windows.Forms.CheckBox; $chkShowHardware.Text = "Hardware Specs"; $chkShowHardware.Location = New-Object System.Drawing.Point(20, 120); $chkShowHardware.Checked = $script:config.ShowHardware
 
-$grpTabVis.Controls.AddRange(@($chkShowLauncher, $chkShowLogs, $chkShowSysInfo, $chkShowNetwork, $chkShowServices, $chkShowProcesses, $chkShowStartup, $chkShowTasks, $chkShowClean, $chkShowHardware))
+$chkShowBloatware = New-Object System.Windows.Forms.CheckBox; $chkShowBloatware.Text = "Bloatware Manager"; $chkShowBloatware.Location = New-Object System.Drawing.Point(200, 120); $chkShowBloatware.Checked = $script:config.ShowBloatware
+
+$grpTabVis.Controls.AddRange(@($chkShowLauncher, $chkShowLogs, $chkShowSysInfo, $chkShowNetwork, $chkShowServices, $chkShowProcesses, $chkShowStartup, $chkShowTasks, $chkShowClean, $chkShowHardware, $chkShowBloatware))
+
+# Tools Group (New)
+$grpTools = New-Object System.Windows.Forms.GroupBox
+$grpTools.Text = "Quick Tools"
+$grpTools.Location = New-Object System.Drawing.Point(20, 610)
+$grpTools.Size = New-Object System.Drawing.Size(540, 80)
+
+$btnBackupPlan = New-Object System.Windows.Forms.Button
+$btnBackupPlan.Text = "Backup Power Plan"
+$btnBackupPlan.Location = New-Object System.Drawing.Point(20, 30)
+$btnBackupPlan.Size = New-Object System.Drawing.Size(150, 35)
+$btnBackupPlan.add_Click({
+    $script = Join-Path $scriptPath "BackupPowerPlan.ps1"
+    if (Test-Path $script) { Start-Process "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$script`"" }
+})
+
+$btnLaunchBloat = New-Object System.Windows.Forms.Button
+$btnLaunchBloat.Text = "Launch Bloatware Mgr"
+$btnLaunchBloat.Location = New-Object System.Drawing.Point(190, 30)
+$btnLaunchBloat.Size = New-Object System.Drawing.Size(150, 35)
+$btnLaunchBloat.add_Click({
+    $script = Join-Path $scriptPath "BloatwareManager.ps1"
+    if (Test-Path $script) { Start-Process "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$script`"" -Verb RunAs }
+})
+
+$btnRestorePlan = New-Object System.Windows.Forms.Button
+$btnRestorePlan.Text = "Restore Power Plan"
+$btnRestorePlan.Location = New-Object System.Drawing.Point(360, 30)
+$btnRestorePlan.Size = New-Object System.Drawing.Size(150, 35)
+$btnRestorePlan.add_Click({
+    $script = Join-Path $scriptPath "RestorePowerPlan.ps1"
+    if (Test-Path $script) { Start-Process "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$script`"" }
+})
+
+$grpTools.Controls.AddRange(@($btnBackupPlan, $btnLaunchBloat, $btnRestorePlan))
 
 # Save Button
 $btnSave = New-Object System.Windows.Forms.Button
 $btnSave.Text = "Save Settings"
-$btnSave.Location = New-Object System.Drawing.Point(20, 600)
+$btnSave.Location = New-Object System.Drawing.Point(20, 700)
 $btnSave.Size = New-Object System.Drawing.Size(150, 40)
+$btnSave.BackColor = [System.Drawing.Color]::LightGreen
 $btnSave.add_Click({
     $script:config.ACScript = $cmbAC.SelectedItem
     $script:config.BatteryScript = $cmbBat.SelectedItem
@@ -583,6 +703,7 @@ $btnSave.add_Click({
     $script:config.ShowTasks = $chkShowTasks.Checked
     $script:config.ShowSystemClean = $chkShowClean.Checked
     $script:config.ShowHardware = $chkShowHardware.Checked
+    $script:config.ShowBloatware = $chkShowBloatware.Checked
 
     $script:config | ConvertTo-Json | Set-Content $configFile
 
@@ -593,7 +714,6 @@ $btnSave.add_Click({
         $Shortcut = $WshShell.CreateShortcut($startupPath)
         $Shortcut.TargetPath = "powershell.exe"
         $Shortcut.Arguments = "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$scriptPath\WAPS ControlCenter.ps1`" -StartMinimized"
-        $Shortcut.Arguments = "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$scriptPath\WAPS ControlCenter.ps1`""
         $Shortcut.IconLocation = "$PSHOME\powershell.exe"
         $Shortcut.Description = "Windows Power Automation Suite"
         $Shortcut.WorkingDirectory = $scriptPath
@@ -618,7 +738,7 @@ $btnSave.add_Click({
 # Reset Button
 $btnReset = New-Object System.Windows.Forms.Button
 $btnReset.Text = "Reset Defaults"
-$btnReset.Location = New-Object System.Drawing.Point(180, 600)
+$btnReset.Location = New-Object System.Drawing.Point(180, 700)
 $btnReset.Size = New-Object System.Drawing.Size(150, 40)
 $btnReset.add_Click({
     $script:config.ACScript = "SystemACMode.ps1"
@@ -642,6 +762,7 @@ $btnReset.add_Click({
     $script:config.ShowTasks = $false
     $script:config.ShowSystemClean = $false
     $script:config.ShowHardware = $false
+    $script:config.ShowBloatware = $true
 
     if ($cmbAC.Items.Contains($script:config.ACScript)) { $cmbAC.SelectedItem = $script:config.ACScript }
     if ($cmbBat.Items.Contains($script:config.BatteryScript)) { $cmbBat.SelectedItem = $script:config.BatteryScript }
@@ -666,6 +787,7 @@ $btnReset.add_Click({
     $chkShowTasks.Checked = $true
     $chkShowClean.Checked = $true
     $chkShowHardware.Checked = $true
+    $chkShowBloatware.Checked = $true
 
     $script:config | ConvertTo-Json | Set-Content $configFile
 
@@ -687,7 +809,7 @@ $btnReset.add_Click({
     [System.Windows.Forms.MessageBox]::Show("Configuration reset to defaults.", "WPAS", "OK", "Information")
 })
 
-$tabSettings.Controls.AddRange(@($lblACSet, $cmbAC, $lblBatSet, $cmbBat, $chkStartupSet, $chkDarkMode, $grpDashVis, $grpTabVis, $btnSave, $btnReset))
+$tabSettings.Controls.AddRange(@($lblACSet, $cmbAC, $lblBatSet, $cmbBat, $chkStartupSet, $chkDarkMode, $grpDashVis, $grpTabVis, $grpTools, $btnSave, $btnReset))
 
 # ------------------------------------------------------------
 # Tab 4: Logs
@@ -1108,7 +1230,7 @@ function Load-ScheduledTasks {
     $tasks = Get-ScheduledTask | Where-Object { $_.State -ne "Disabled" } | Sort-Object TaskName
     foreach ($t in $tasks) {
         $item = New-Object System.Windows.Forms.ListViewItem($t.TaskName)
-        $item.SubItems.Add($t.State) | Out-Null
+        $item.SubItems.Add("$($t.State)") | Out-Null
         $item.SubItems.Add($t.TaskPath) | Out-Null
         $item.Tag = $t
         $lvTasks.Items.Add($item) | Out-Null
@@ -1182,7 +1304,7 @@ $btnClearStandby.add_Click({
     }
 })
 
-$tabClean.Controls.AddRange(@($chkTemp, $chkRecycle, $chkBrowser, $btnRunClean, $btnClearStandby))
+$tabClean.Controls.AddRange(@($chkTemp, $chkRecycle, $chkBrowser, $btnRunClean, $btnClearStandby, $btnBloatware))
 
 # ------------------------------------------------------------
 # Tab 12: Hardware Specs
@@ -1205,20 +1327,36 @@ function Load-HardwareSpecs {
     # CPU
     try {
         $cpu = Get-CimInstance Win32_Processor | Select-Object -First 1
-        $lvHardware.Items.Add((New-Object System.Windows.Forms.ListViewItem @("CPU Model", $cpu.Name))) | Out-Null
-        $lvHardware.Items.Add((New-Object System.Windows.Forms.ListViewItem @("CPU Cores", "$($cpu.NumberOfCores) Cores / $($cpu.NumberOfLogicalProcessors) Threads"))) | Out-Null
-        $lvHardware.Items.Add((New-Object System.Windows.Forms.ListViewItem @("Max Clock Speed", "$($cpu.MaxClockSpeed) MHz"))) | Out-Null
+        $item = New-Object System.Windows.Forms.ListViewItem "CPU Model"
+        $item.SubItems.Add($cpu.Name) | Out-Null
+        $lvHardware.Items.Add($item) | Out-Null
+
+        $item = New-Object System.Windows.Forms.ListViewItem "CPU Cores"
+        $item.SubItems.Add("$($cpu.NumberOfCores) Cores / $($cpu.NumberOfLogicalProcessors) Threads") | Out-Null
+        $lvHardware.Items.Add($item) | Out-Null
+
+        $item = New-Object System.Windows.Forms.ListViewItem "Max Clock Speed"
+        $item.SubItems.Add("$($cpu.MaxClockSpeed) MHz") | Out-Null
+        $lvHardware.Items.Add($item) | Out-Null
     } catch {}
 
     # GPU
     try {
         $gpus = Get-CimInstance Win32_VideoController
         foreach ($gpu in $gpus) {
-            $lvHardware.Items.Add((New-Object System.Windows.Forms.ListViewItem @("GPU Model", $gpu.Name))) | Out-Null
-            $lvHardware.Items.Add((New-Object System.Windows.Forms.ListViewItem @("GPU Driver", $gpu.DriverVersion))) | Out-Null
+            $item = New-Object System.Windows.Forms.ListViewItem "GPU Model"
+            $item.SubItems.Add($gpu.Name) | Out-Null
+            $lvHardware.Items.Add($item) | Out-Null
+
+            $item = New-Object System.Windows.Forms.ListViewItem "GPU Driver"
+            $item.SubItems.Add($gpu.DriverVersion) | Out-Null
+            $lvHardware.Items.Add($item) | Out-Null
+
             $vram = [math]::Round($gpu.AdapterRAM / 1GB, 2)
             if ($vram -gt 0) {
-                 $lvHardware.Items.Add((New-Object System.Windows.Forms.ListViewItem @("VRAM", "$vram GB"))) | Out-Null
+                 $item = New-Object System.Windows.Forms.ListViewItem "VRAM"
+                 $item.SubItems.Add("$vram GB") | Out-Null
+                 $lvHardware.Items.Add($item) | Out-Null
             }
         }
     } catch {}
@@ -1226,8 +1364,14 @@ function Load-HardwareSpecs {
     # Motherboard
     try {
         $board = Get-CimInstance Win32_BaseBoard | Select-Object -First 1
-        $lvHardware.Items.Add((New-Object System.Windows.Forms.ListViewItem @("Motherboard", "$($board.Manufacturer) $($board.Product)"))) | Out-Null
-        $lvHardware.Items.Add((New-Object System.Windows.Forms.ListViewItem @("BIOS Version", "$(Get-CimInstance Win32_BIOS | Select-Object -ExpandProperty SMBIOSBIOSVersion)"))) | Out-Null
+        $item = New-Object System.Windows.Forms.ListViewItem "Motherboard"
+        $item.SubItems.Add("$($board.Manufacturer) $($board.Product)") | Out-Null
+        $lvHardware.Items.Add($item) | Out-Null
+
+        $bios = Get-CimInstance Win32_BIOS | Select-Object -ExpandProperty SMBIOSBIOSVersion
+        $item = New-Object System.Windows.Forms.ListViewItem "BIOS Version"
+        $item.SubItems.Add("$bios") | Out-Null
+        $lvHardware.Items.Add($item) | Out-Null
     } catch {}
 
     # RAM
@@ -1237,16 +1381,123 @@ function Load-HardwareSpecs {
         foreach ($stick in $memSticks) {
             $capGB = [math]::Round($stick.Capacity / 1GB, 0)
             $totalMem += $stick.Capacity
-            $lvHardware.Items.Add((New-Object System.Windows.Forms.ListViewItem @("RAM Stick", "$capGB GB $($stick.Manufacturer) @ $($stick.Speed) MHz"))) | Out-Null
+            $item = New-Object System.Windows.Forms.ListViewItem "RAM Stick"
+            $item.SubItems.Add("$capGB GB $($stick.Manufacturer) @ $($stick.Speed) MHz") | Out-Null
+            $lvHardware.Items.Add($item) | Out-Null
         }
         $totalMemGB = [math]::Round($totalMem / 1GB, 2)
-        $lvHardware.Items.Add((New-Object System.Windows.Forms.ListViewItem @("Total RAM", "$totalMemGB GB"))) | Out-Null
+        $item = New-Object System.Windows.Forms.ListViewItem "Total RAM"
+        $item.SubItems.Add("$totalMemGB GB") | Out-Null
+        $lvHardware.Items.Add($item) | Out-Null
     } catch {}
 }
 
-try { Load-HardwareSpecs } catch {}
-
 $tabHardware.Controls.Add($lvHardware)
+
+# ------------------------------------------------------------
+# Tab 13: Bloatware Manager
+# ------------------------------------------------------------
+$tabBloatware = New-Object System.Windows.Forms.TabPage
+$tabBloatware.Text = "Bloatware"
+$tabBloatware.UseVisualStyleBackColor = $true
+
+$lblBloatInfo = New-Object System.Windows.Forms.Label
+$lblBloatInfo.Text = "Select Windows Store applications to remove (Current User):"
+$lblBloatInfo.Location = New-Object System.Drawing.Point(20, 15)
+$lblBloatInfo.Size = New-Object System.Drawing.Size(300, 20)
+
+$lblBloatSearch = New-Object System.Windows.Forms.Label
+$lblBloatSearch.Text = "Search:"
+$lblBloatSearch.Location = New-Object System.Drawing.Point(330, 15)
+$lblBloatSearch.Size = New-Object System.Drawing.Size(50, 20)
+
+$txtBloatSearch = New-Object System.Windows.Forms.TextBox
+$txtBloatSearch.Location = New-Object System.Drawing.Point(380, 12)
+$txtBloatSearch.Size = New-Object System.Drawing.Size(180, 25)
+
+$lvBloatApps = New-Object System.Windows.Forms.ListView
+$lvBloatApps.Location = New-Object System.Drawing.Point(20, 40)
+$lvBloatApps.Size = New-Object System.Drawing.Size(540, 450)
+$lvBloatApps.View = "Details"
+$lvBloatApps.CheckBoxes = $true
+$lvBloatApps.FullRowSelect = $true
+$lvBloatApps.GridLines = $true
+$lvBloatApps.Columns.Add("Application Name", 250) | Out-Null
+$lvBloatApps.Columns.Add("Publisher", 200) | Out-Null
+$lvBloatApps.Columns.Add("Version", 80) | Out-Null
+
+$script:cachedBloatApps = @()
+
+function Filter-BloatwareApps {
+    $lvBloatApps.BeginUpdate()
+    $lvBloatApps.Items.Clear()
+    $filter = $txtBloatSearch.Text
+    
+    $source = $script:cachedBloatApps
+    if (-not [string]::IsNullOrWhiteSpace($filter)) {
+        $source = $source | Where-Object { $_.Name -like "*$filter*" -or $_.Publisher -like "*$filter*" }
+    }
+    
+    foreach ($app in $source) {
+        $item = New-Object System.Windows.Forms.ListViewItem($app.Name)
+        $item.SubItems.Add($app.Publisher) | Out-Null
+        $item.SubItems.Add($app.Version) | Out-Null
+        $item.Tag = $app.PackageFullName
+        $lvBloatApps.Items.Add($item) | Out-Null
+    }
+    $lvBloatApps.EndUpdate()
+}
+
+function Load-BloatwareApps {
+    $mainForm.Cursor = [System.Windows.Forms.Cursors]::WaitCursor
+    try {
+        $script:cachedBloatApps = Get-AppxPackage | Where-Object { $_.NonRemovable -eq $false -and $_.IsFramework -eq $false } | Sort-Object Name
+        Filter-BloatwareApps
+    } catch {
+        Write-Log "Error loading bloatware apps: $_"
+    }
+    $mainForm.Cursor = [System.Windows.Forms.Cursors]::Default
+}
+
+$txtBloatSearch.Add_TextChanged({ Filter-BloatwareApps })
+
+$btnRefreshBloat = New-Object System.Windows.Forms.Button
+$btnRefreshBloat.Text = "Refresh List"
+$btnRefreshBloat.Location = New-Object System.Drawing.Point(20, 500)
+$btnRefreshBloat.Size = New-Object System.Drawing.Size(120, 35)
+$btnRefreshBloat.add_Click({ Load-BloatwareApps })
+
+$btnRemoveBloat = New-Object System.Windows.Forms.Button
+$btnRemoveBloat.Text = "Remove Selected"
+$btnRemoveBloat.Location = New-Object System.Drawing.Point(410, 500)
+$btnRemoveBloat.Size = New-Object System.Drawing.Size(150, 35)
+$btnRemoveBloat.ForeColor = [System.Drawing.Color]::White
+$btnRemoveBloat.BackColor = [System.Drawing.Color]::Firebrick
+$btnRemoveBloat.add_Click({
+    $checked = $lvBloatApps.CheckedItems
+    if ($checked.Count -eq 0) {
+        [System.Windows.Forms.MessageBox]::Show("No applications selected.", "WPAS", "OK", "Warning")
+        return
+    }
+    $confirm = [System.Windows.Forms.MessageBox]::Show("Are you sure you want to remove $($checked.Count) application(s)?`nThis action cannot be easily undone.", "Confirm Removal", "YesNo", "Warning")
+    if ($confirm -eq "Yes") {
+        $mainForm.Cursor = [System.Windows.Forms.Cursors]::WaitCursor
+        $removedCount = 0
+        foreach ($item in $checked) {
+            try {
+                Remove-AppxPackage -Package $item.Tag -ErrorAction Stop
+                $removedCount++
+            } catch {
+                [System.Windows.Forms.MessageBox]::Show("Failed to remove $($item.Text):`n$($_.Exception.Message)", "Error", "OK", "Error")
+            }
+        }
+        $mainForm.Cursor = [System.Windows.Forms.Cursors]::Default
+        [System.Windows.Forms.MessageBox]::Show("Successfully removed $removedCount application(s).", "WPAS", "OK", "Information")
+        Load-BloatwareApps
+    }
+})
+
+$tabBloatware.Controls.AddRange(@($lblBloatInfo, $lblBloatSearch, $txtBloatSearch, $lvBloatApps, $btnRefreshBloat, $btnRemoveBloat))
 
 # ------------------------------------------------------------
 # Tab Refresh Logic
@@ -1267,6 +1518,7 @@ function Refresh-Tabs {
     if ($script:config.ShowTasks) { $tabControl.TabPages.Add($tabTasks) }
     if ($script:config.ShowSystemClean) { $tabControl.TabPages.Add($tabClean) }
     if ($script:config.ShowHardware) { $tabControl.TabPages.Add($tabHardware) }
+    if ($script:config.ShowBloatware) { $tabControl.TabPages.Add($tabBloatware) }
     
     $tabControl.ResumeLayout()
 }
@@ -1331,6 +1583,7 @@ $script:lastPowerStatus = $null
 $script:gpuName = $null
 $script:firstTick = $true
 $script:lowBatteryWarned = $false
+$script:activationTick = 0
 
 $timer = New-Object System.Windows.Forms.Timer
 $timer.Interval = 3000 # 3 seconds
@@ -1348,6 +1601,16 @@ $timer.add_Tick({
     # Load Tasks if tab selected and empty
     if ($tabControl.SelectedTab -eq $tabTasks -and $lvTasks.Items.Count -eq 0) {
         Load-ScheduledTasks
+    }
+    
+    # Load Bloatware if tab selected and empty
+    if ($tabControl.SelectedTab -eq $tabBloatware -and $lvBloatApps.Items.Count -eq 0) {
+        Load-BloatwareApps
+    }
+
+    # Load Hardware if tab selected and empty
+    if ($tabControl.SelectedTab -eq $tabHardware -and $lvHardware.Items.Count -eq 0) {
+        Load-HardwareSpecs
     }
 
 
@@ -1391,6 +1654,21 @@ $timer.add_Tick({
         }
     }
 
+    # Update Activation (Every 10 ticks = 30 seconds to save resources)
+    $script:activationTick++
+    if ($script:activationTick -ge 10 -or $lblActivation.Text -eq "Activation: Checking...") {
+        $script:activationTick = 0
+        if (Get-Command Get-WPASActivationStatus -ErrorAction SilentlyContinue) {
+            $actStatus = Get-WPASActivationStatus
+            $lblActivation.Text = "Activation: $actStatus"
+            if ($actStatus -eq "Licensed") {
+                $lblActivation.ForeColor = [System.Drawing.Color]::Green
+            } else {
+                $lblActivation.ForeColor = [System.Drawing.Color]::Red
+            }
+        }
+    }
+
     # Update Plan
     if (Get-Command Get-WPASActiveScheme -ErrorAction SilentlyContinue) {
         $plan = Get-WPASActiveScheme
@@ -1417,6 +1695,17 @@ $timer.add_Tick({
         $lblCPUTemp.Text = "CPU Temp: $tempC C"
     } catch {
         $lblCPUTemp.Text = "CPU Temp: N/A"
+    }
+
+    # Update CPU Clock
+    try {
+        $cpuClock = Get-CimInstance -ClassName Win32_Processor -ErrorAction SilentlyContinue | Select-Object -ExpandProperty CurrentClockSpeed -First 1
+        if ($cpuClock) {
+            $ghz = [math]::Round($cpuClock / 1000, 2)
+            $lblCPUClock.Text = "CPU Speed: $ghz GHz ($cpuClock MHz)"
+        }
+    } catch {
+        $lblCPUClock.Text = "CPU Speed: N/A"
     }
 
     # Update Uptime
@@ -1453,7 +1742,6 @@ $timer.add_Tick({
     # Update Disk Speed
     try {
         $diskStats = Get-CimInstance Win32_PerfFormattedData_PerfDisk_PhysicalDisk -Filter "Name='_Total'" -ErrorAction SilentlyContinue
-        $diskStats = Get-CimInstance Win32_PerfFormattedData_PerfDisk_PhysicalDisk -ErrorAction SilentlyContinue | Where-Object Name -eq "_Total"
         if ($diskStats) {
             $readKB = [math]::Round($diskStats.DiskReadBytesPersec / 1KB, 1)
             $writeKB = [math]::Round($diskStats.DiskWriteBytesPersec / 1KB, 1)
@@ -1517,7 +1805,8 @@ $timer.add_Tick({
             $lblNetStatus.ForeColor = [System.Drawing.Color]::Red
         }
 
-        $ip = Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.InterfaceAlias -notlike "*Loopback*" -and $_.ConnectionState -eq "Connected" } | Select-Object -ExpandProperty IPAddress -First 1
+        $ips = Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue | Where-Object { $_.InterfaceAlias -notlike "*Loopback*" -and $_.ConnectionState -eq "Connected" }
+        $ip = $ips | Select-Object -ExpandProperty IPAddress -First 1
         if ($ip) { $lblNetIP.Text = "IP Address: $ip" } else { $lblNetIP.Text = "IP Address: Not Found" }
     }
 
